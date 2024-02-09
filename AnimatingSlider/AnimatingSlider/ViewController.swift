@@ -10,6 +10,10 @@ class ViewController: UIViewController {
     private let image = Image()
     private let slider = UISlider()
 
+    private let squareSide: CGFloat = 100.0
+    private let contentInset: CGFloat = 16.0
+    private let maxScale: CGFloat = 1.5
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -23,54 +27,43 @@ class ViewController: UIViewController {
         square.addSubview(image)
 
 
-        square.frame = CGRect(x: 32, y: 200, width: 100, height: 100)
+        square.frame = CGRect(x: contentInset, y: 200, width: squareSide, height: squareSide)
         slider.value = 0.0
-        slider.frame = CGRect(x: 16.0, y: view.frame.height / 2, width: view.frame.width - 2 * 16.0, height: 44)
+        slider.frame = CGRect(x: contentInset, y: view.frame.height / 2, width: view.frame.width - 2 * contentInset, height: 44)
         image.frame = CGRect(x: 8, y: 8, width: 24, height: 24)
 
 
         slider.addTarget(self, action: #selector(handleSliderChanged(slider:)), for: .valueChanged)
-        slider.addTarget(self, action: #selector(handleSliderDown(slider:)), for: .touchDown)
         slider.addTarget(self, action: #selector(handleSliderUp(slider:)), for: .touchUpInside)
         animator.fractionComplete = CGFloat(slider.value)
         animator.pausesOnCompletion = true
-        animator = UIViewPropertyAnimator(duration: 1.0, curve: .easeInOut, animations: animation
-//                                            { [weak self] in
-//            guard let self else { return }
-//            self.square.transform = CGAffineTransform(scaleX: 1.5, y: 1.5).rotated(by: .pi / 2)
-//            self.square.center.x = self.view.frame.width - 32 - (100 * 1.5 / 2)
-//            if !self.changingBySlider {
-//                self.slider.setValue(self.animator.fractionComplete, animated: false)
-//            }
-//            self.view.layoutIfNeeded()
-//        }
-        )
+        animator = UIViewPropertyAnimator(duration: 1.0, curve: .easeInOut, animations: animation)
     }
 
     private func animation() {
-        square.transform = CGAffineTransform(scaleX: 1.5, y: 1.5).rotated(by: .pi / 2)
-        square.center.x = view.frame.width - 32 - (100 * 1.5 / 2)
+        square.transform = CGAffineTransform(scaleX: maxScale, y: maxScale).rotated(by: .pi / 2)
+        square.center.x = view.frame.width - contentInset - (squareSide * maxScale / 2)
         view.layoutIfNeeded()
     }
 
     @objc
     private func handleSliderUp(slider: UISlider) {
 
-        UIView.animate(withDuration: 15.0, delay: 0.0, options: .curveEaseInOut, animations: {
-            self.slider.value = 1.0
-//            self.handleSliderChanged(slider: slider)
-        },
-            completion: nil)
+        // FiXME: this solution is too fast and ignoring withDuration parameter
+//        UIView.animate(
+//            withDuration: 15.0, delay: 0.0, options: .curveEaseInOut,
+//            animations: {
+//                self.slider.value = 1.0
+//                self.handleSliderChanged(slider: slider)
+//            },
+//            completion: nil
+//        )
 
-//        slider.setValue(slider.maximumValue, animated: true)
-//        animator.continueAnimation(withTimingParameters: .none, durationFactor: 0)
+        // NOTE: don't like this solution because slider and animator not synced
+        slider.setValue(slider.maximumValue, animated: true)
+        animator.continueAnimation(withTimingParameters: .none, durationFactor: 0)
     }
 
-    @objc
-    private func handleSliderDown(slider: UISlider) {
-//        animator.pauseAnimation()
-    }
-//
     @objc
     private func handleSliderChanged(slider: UISlider) {
         animator.pausesOnCompletion = true
